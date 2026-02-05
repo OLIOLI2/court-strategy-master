@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>코트전략마스터 - 김진우 선생님</title>
+    <title>코트전략마스터 - 초등 맞춤 전술판</title>
     <!-- React & ReactDOM -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
@@ -20,6 +20,8 @@
         .animate-pulse-slow { animation: pulse-slow 3s ease-in-out infinite; }
         @keyframes bounce-success { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
         .animate-bounce-success { animation: bounce-success 0.5s ease-in-out 3; }
+        .scroll-custom::-webkit-scrollbar { width: 4px; }
+        .scroll-custom::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
     </style>
 </head>
 <body>
@@ -28,7 +30,7 @@
     <script type="text/babel">
         const { useState, useRef, useEffect } = React;
 
-        // --- Inline SVG Icons (Lucide replacement for standalone environment) ---
+        // --- Inline SVG Icons ---
         const Icon = ({ name, size = 24, className = "" }) => {
             const icons = {
                 Trophy: <path d="M6 9H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h2m12 6h2a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-2M6 13c0 2.2 1.8 4 4 4h4c2.2 0 4-1.8 4-4V5H6v8zm4 4v3m4-3v3m-5 0h6" />,
@@ -39,7 +41,6 @@
                 RotateCcw: <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8m0-5v5h5" />,
                 Lightbulb: <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A5 5 0 0 0 8 8c0 1.3.5 2.6 1.5 3.5.8.8 1.3 1.5 1.5 2.5m1 2h2m-2 3h2" />,
                 ChevronRight: <path d="m9 18 6-6-6-6" />,
-                Move: <path d="m15 19-3 3-3-3m12-7 3-3-3-3M9 5l3-3 3 3M5 9l-3 3 3 3" />,
                 UserPlus: <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2m7-10a4 4 0 1 0 0-8 4 4 0 0 0 0 8m10 5v6m3-3h-6" />,
                 UserMinus: <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2m7-10a4 4 0 1 0 0-8 4 4 0 0 0 0 8m14 5h-6" />,
                 CheckCircle: <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14m1 3L12 15l-3-3" />,
@@ -49,169 +50,23 @@
                         <path d="m15 9-6 6m0-6 6 6" />
                     </React.Fragment>
                 ),
-                Play: <path d="m7 4 12 8-12 8V4z" />
+                Play: <path d="m7 4 12 8-12 8V4z" />,
+                Key: <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0 3 3L22 7l-3-3y-3.5L15.5 7.5z" />,
+                Sparkles: <path d="m12 3 1.912 5.813a2 2 0 0 0 1.275 1.275L21 12l-5.813 1.912a2 2 0 0 0-1.275 1.275L12 21l-1.912-5.813a2 2 0 0 0-1.275-1.275L3 12l5.813-1.912a2 2 0 0 0 1.275-1.275L12 3Z" />,
+                Layers: (
+                    <React.Fragment>
+                        <path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.26 6.38a2 2 0 0 0 0 3.62l8.91 4.2a2 2 0 0 0 1.66 0l8.91-4.2a2 2 0 0 0 0-3.62Z" />
+                        <path d="m2.26 12.38 8.91 4.2a2 2 0 0 0 1.66 0l8.91-4.2" />
+                        <path d="m2.26 16.38 8.91 4.2a2 2 0 0 0 1.66 0l8.91-4.2" />
+                    </React.Fragment>
+                )
             };
             return (
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width={size}
-                    height={size}
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className={className}
-                >
+                <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
                     {icons[name]}
                 </svg>
             );
         };
-
-        const COURT_TYPES = {
-            basketball: {
-                name: '농구',
-                color: '#f97316',
-                ratio: 1.6,
-                lines: (w, h) => (
-                    <svg className="absolute inset-0 w-full h-full pointer-events-none">
-                        <rect x="5%" y="5%" width="90%" height="90%" fill="none" stroke="white" strokeWidth="2" />
-                        <line x1="50%" y1="5%" x2="50%" y2="95%" stroke="white" strokeWidth="2" />
-                        <circle cx="50%" cy="50%" r="10%" fill="none" stroke="white" strokeWidth="2" />
-                        <path d={`M ${w * 0.05},${h * 0.2} L ${w * 0.12},${h * 0.2} Q ${w * 0.35},${h * 0.2} ${w * 0.35},${h * 0.5} T ${w * 0.12},${h * 0.8} L ${w * 0.05},${h * 0.8}`} fill="none" stroke="white" strokeWidth="2" />
-                        <path d={`M ${w * 0.95},${h * 0.2} L ${w * 0.88},${h * 0.2} Q ${w * 0.65},${h * 0.2} ${w * 0.65},${h * 0.5} T ${w * 0.88},${h * 0.8} L ${w * 0.95},${h * 0.8}`} fill="none" stroke="white" strokeWidth="2" />
-                        <line x1="7%" y1="42%" x2="7%" y2="58%" stroke="white" strokeWidth="4" />
-                        <circle cx="9%" cy="50%" r="2%" fill="none" stroke="#ef4444" strokeWidth="3" />
-                        <line x1="93%" y1="42%" x2="93%" y2="58%" stroke="white" strokeWidth="4" />
-                        <circle cx="91%" cy="50%" r="2%" fill="none" stroke="#ef4444" strokeWidth="3" />
-                    </svg>
-                )
-            },
-            futsal: {
-                name: '풋살',
-                color: '#22c55e',
-                ratio: 1.5,
-                lines: (w, h) => (
-                    <svg className="absolute inset-0 w-full h-full pointer-events-none">
-                        <rect x="5%" y="5%" width="90%" height="90%" fill="none" stroke="white" strokeWidth="2" />
-                        <line x1="50%" y1="5%" x2="50%" y2="95%" stroke="white" strokeWidth="2" />
-                        <circle cx="50%" cy="50%" r="8%" fill="none" stroke="white" strokeWidth="2" />
-                        <path d={`M ${w * 0.05},${h * 0.25} A ${w * 0.15} ${h * 0.25} 0 0 1 ${w * 0.05} ${h * 0.75}`} fill="none" stroke="white" strokeWidth="2" />
-                        <path d={`M ${w * 0.95},${h * 0.25} A ${w * 0.15} ${h * 0.25} 0 0 0 ${w * 0.95} ${h * 0.75}`} fill="none" stroke="white" strokeWidth="2" />
-                        <rect x="2.5%" y="40%" width="2.5%" height="20%" fill="none" stroke="white" strokeWidth="3" />
-                        <rect x="95%" y="40%" width="2.5%" height="20%" fill="none" stroke="white" strokeWidth="3" />
-                    </svg>
-                )
-            },
-            volleyball: {
-                name: '배구',
-                color: '#3b82f6',
-                ratio: 1.8,
-                lines: (w, h) => (
-                    <svg className="absolute inset-0 w-full h-full pointer-events-none">
-                        <rect x="10%" y="10%" width="80%" height="80%" fill="none" stroke="white" strokeWidth="2" />
-                        <line x1="36.6%" y1="10%" x2="36.6%" y2="90%" stroke="white" strokeWidth="2" strokeDasharray="5,5" />
-                        <line x1="63.3%" y1="10%" x2="63.3%" y2="90%" stroke="white" strokeWidth="2" strokeDasharray="5,5" />
-                        <rect x="49.5%" y="5%" width="1%" height="90%" fill="rgba(255,255,255,0.3)" />
-                        <line x1="50%" y1="5%" x2="50%" y2="95%" stroke="#cbd5e1" strokeWidth="6" />
-                        {[...Array(10)].map((_, i) => (
-                            <line key={i} x1="49.5%" y1={`${10 + i * 8}%`} x2="50.5%" y2={`${10 + i * 8}%`} stroke="white" strokeWidth="1" />
-                        ))}
-                    </svg>
-                )
-            }
-        };
-
-        const STRATEGY_CHALLENGES = [
-            {
-                id: 1, title: "농구: 공간 창출", courtType: 'basketball',
-                description: "공격수 1명을 코너 구석(흰 점선 구역)으로 이동시켜 수비수를 끌어내고 패스 길을 여세요.",
-                tip: "공간을 넓게 쓰는 것이 핵심입니다.",
-                initialPlayers: [
-                    { id: 1, x: 25, y: 50, team: 'A', role: '공격1' },
-                    { id: 2, x: 25, y: 35, team: 'A', role: '공격2' },
-                    { id: 3, x: 18, y: 45, team: 'B', role: '수비1' },
-                    { id: 'ball', x: 25, y: 50, team: 'none', isBall: true }
-                ],
-                targetZone: { x: 5, y: 85, w: 15, h: 10, type: 'rect' },
-                checkSuccess: (players) => players.some(p => p.team === 'A' && p.x < 20 && p.y > 75)
-            },
-            {
-                id: 2, title: "풋살: 다이아몬드 대형", courtType: 'futsal',
-                description: "선수 4명을 다이아몬드 대형으로 배치하여 균형 잡힌 공수 포메이션을 만드세요.",
-                tip: "피보, 알라, 픽소 포지션을 생각하세요.",
-                initialPlayers: [
-                    { id: 1, x: 48, y: 48, team: 'A', role: 'P' }, { id: 2, x: 50, y: 50, team: 'A', role: 'P' },
-                    { id: 3, x: 52, y: 52, team: 'A', role: 'P' }, { id: 4, x: 54, y: 54, team: 'A', role: 'P' },
-                    { id: 'ball', x: 20, y: 50, team: 'none', isBall: true }
-                ],
-                targetZone: { x: 50, y: 50, r: 25, type: 'circle' },
-                checkSuccess: (players) => {
-                    const teamA = players.filter(p => p.team === 'A');
-                    if (teamA.length < 4) return false;
-                    return teamA.some(p => p.x < 40) && teamA.some(p => p.x > 60) && teamA.some(p => p.y < 35) && teamA.some(p => p.y > 65);
-                }
-            },
-            {
-                id: 3, title: "배구: 기본 수비 대형", courtType: 'volleyball',
-                description: "강력한 스파이크를 막기 위해 수비수 3명을 부채꼴 모양으로 배치하세요.",
-                tip: "엔드라인 근처를 넓게 커버해야 합니다.",
-                initialPlayers: [
-                    { id: 1, x: 70, y: 50, team: 'A', role: '수비' }, { id: 2, x: 75, y: 45, team: 'A', role: '수비' },
-                    { id: 3, x: 75, y: 55, team: 'A', role: '수비' },
-                    { id: 'ball', x: 20, y: 50, team: 'none', isBall: true }
-                ],
-                targetZone: { x: 85, y: 50, w: 10, h: 80, type: 'rect' },
-                checkSuccess: (players) => {
-                    const teamA = players.filter(p => p.team === 'A' && p.x > 75);
-                    const spread = Math.max(...teamA.map(p => p.y)) - Math.min(...teamA.map(p => p.y));
-                    return teamA.length >= 3 && spread > 40;
-                }
-            },
-            {
-                id: 4, title: "농구: 픽앤롤", courtType: 'basketball',
-                description: "센터가 스크린 이후 골밑으로 파고드는 '롤' 동작을 수행하세요.",
-                tip: "수비수 뒤쪽 공간으로 빠르게 이동하세요.",
-                initialPlayers: [
-                    { id: 1, x: 35, y: 40, team: 'A', role: '가드' }, { id: 2, x: 30, y: 45, team: 'A', role: '센터' },
-                    { id: 3, x: 28, y: 40, team: 'B', role: '수비' },
-                    { id: 'ball', x: 35, y: 40, team: 'none', isBall: true }
-                ],
-                targetZone: { x: 10, y: 50, r: 10, type: 'circle' },
-                checkSuccess: (players) => {
-                    const center = players.find(p => p.role === '센터');
-                    return center && center.x < 15 && center.y > 40 && center.y < 60;
-                }
-            },
-            {
-                id: 5, title: "풋살: 전방 압박", courtType: 'futsal',
-                description: "모든 선수가 하프라인을 넘어 전진하여 강력한 압박 대형을 만드세요.",
-                tip: "전체적인 수비 라인을 높여야 합니다.",
-                initialPlayers: [
-                    { id: 1, x: 40, y: 30, team: 'A', role: '압박' }, { id: 2, x: 40, y: 50, team: 'A', role: '압박' },
-                    { id: 3, x: 40, y: 70, team: 'A', role: '압박' },
-                    { id: 'ball', x: 80, y: 50, team: 'none', isBall: true }
-                ],
-                targetZone: { x: 75, y: 50, w: 40, h: 90, type: 'rect' },
-                checkSuccess: (players) => players.filter(p => p.team === 'A').every(p => p.x > 55)
-            },
-            {
-                id: 6, title: "배구: 세터의 이동", courtType: 'volleyball',
-                description: "후방 세터가 리시브 직후 네트 앞 중앙으로 빠르게 이동하게 하세요.",
-                tip: "공격 조율을 위한 준비가 필요합니다.",
-                initialPlayers: [
-                    { id: 1, x: 80, y: 80, team: 'A', role: '세터' }, { id: 2, x: 70, y: 50, team: 'A', role: '공격' },
-                    { id: 3, x: 70, y: 20, team: 'A', role: '공격' },
-                    { id: 'ball', x: 20, y: 50, team: 'none', isBall: true }
-                ],
-                targetZone: { x: 55, y: 50, r: 8, type: 'circle' },
-                checkSuccess: (players) => {
-                    const setter = players.find(p => p.role === '세터');
-                    return setter && setter.x < 65 && setter.x > 50 && setter.y > 40 && setter.y < 60;
-                }
-            }
-        ];
 
         const BallIcon = ({ type }) => {
             const commonProps = { viewBox: "0 0 100 100", className: "w-full h-full" };
@@ -224,78 +79,75 @@
             if (type === 'volleyball') return (
                 <svg {...commonProps}><circle cx="50" cy="50" r="45" fill="#fde047" stroke="#1d4ed8" strokeWidth="2" /><path d="M 20,30 Q 50,50 80,30" fill="none" stroke="#1d4ed8" strokeWidth="4" /><path d="M 20,70 Q 50,50 80,70" fill="none" stroke="#1d4ed8" strokeWidth="4" /><path d="M 50,10 Q 50,50 50,90" fill="none" stroke="#1d4ed8" strokeWidth="4" /><circle cx="50" cy="50" r="45" fill="none" stroke="white" strokeWidth="2" strokeDasharray="1,5" /></svg>
             );
+            if (type === 'free') return (
+                <svg {...commonProps}><circle cx="50" cy="50" r="45" fill="white" stroke="#475569" strokeWidth="2" /><circle cx="50" cy="50" r="38" fill="none" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="4,4" /></svg>
+            );
             return <div className="w-full h-full rounded-full bg-slate-300" />;
         };
 
+        const COURT_TYPES = {
+            basketball: { name: '농구', color: '#f97316', ratio: 1.6, lines: (w, h) => (<svg className="absolute inset-0 w-full h-full pointer-events-none"><rect x="5%" y="5%" width="90%" height="90%" fill="none" stroke="white" strokeWidth="2" /><line x1="50%" y1="5%" x2="50%" y2="95%" stroke="white" strokeWidth="2" /><circle cx="50%" cy="50%" r="10%" fill="none" stroke="white" strokeWidth="2" /><path d={`M ${w * 0.05},${h * 0.2} L ${w * 0.12},${h * 0.2} Q ${w * 0.35},${h * 0.2} ${w * 0.35},${h * 0.5} T ${w * 0.12},${h * 0.8} L ${w * 0.05},${h * 0.8}`} fill="none" stroke="white" strokeWidth="2" /><path d={`M ${w * 0.95},${h * 0.2} L ${w * 0.88},${h * 0.2} Q ${w * 0.65},${h * 0.2} ${w * 0.65},${h * 0.5} T ${w * 0.88},${h * 0.8} L ${w * 0.95},${h * 0.8}`} fill="none" stroke="white" strokeWidth="2" /><line x1="7%" y1="42%" x2="7%" y2="58%" stroke="white" strokeWidth="4" /><circle cx="9%" cy="50%" r="2%" fill="none" stroke="#ef4444" strokeWidth="3" /><line x1="93%" y1="42%" x2="93%" y2="58%" stroke="white" strokeWidth="4" /><circle cx="91%" cy="50%" r="2%" fill="none" stroke="#ef4444" strokeWidth="3" /></svg>) },
+            futsal: { name: '풋살', color: '#22c55e', ratio: 1.5, lines: (w, h) => (<svg className="absolute inset-0 w-full h-full pointer-events-none"><rect x="5%" y="5%" width="90%" height="90%" fill="none" stroke="white" strokeWidth="2" /><line x1="50%" y1="5%" x2="50%" y2="95%" stroke="white" strokeWidth="2" /><circle cx="50%" cy="50%" r="8%" fill="none" stroke="white" strokeWidth="2" /><path d={`M ${w * 0.05},${h * 0.25} A ${w * 0.15} ${h * 0.25} 0 0 1 ${w * 0.05} ${h * 0.75}`} fill="none" stroke="white" strokeWidth="2" /><path d={`M ${w * 0.95},${h * 0.25} A ${w * 0.15} ${h * 0.25} 0 0 0 ${w * 0.95} ${h * 0.75}`} fill="none" stroke="white" strokeWidth="2" /><rect x="2.5%" y="40%" width="2.5%" height="20%" fill="none" stroke="white" strokeWidth="3" /><rect x="95%" y="40%" width="2.5%" height="20%" fill="none" stroke="white" strokeWidth="3" /></svg>) },
+            volleyball: { name: '배구', color: '#3b82f6', ratio: 1.8, lines: (w, h) => (<svg className="absolute inset-0 w-full h-full pointer-events-none"><rect x="10%" y="10%" width="80%" height="80%" fill="none" stroke="white" strokeWidth="2" /><line x1="36.6%" y1="10%" x2="36.6%" y2="90%" stroke="white" strokeWidth="2" strokeDasharray="5,5" /><line x1="63.3%" y1="10%" x2="63.3%" y2="90%" stroke="white" strokeWidth="2" strokeDasharray="5,5" /><rect x="49.5%" y="5%" width="1%" height="90%" fill="rgba(255,255,255,0.3)" /><line x1="50%" y1="5%" x2="50%" y2="95%" stroke="#cbd5e1" strokeWidth="6" />{[...Array(10)].map((_, i) => (<line key={i} x1="49.5%" y1={`${10 + i * 8}%`} x2="50.5%" y2={`${10 + i * 8}%`} stroke="white" strokeWidth="1" />))}</svg>) },
+            free: { name: '자유', color: '#475569', ratio: 1.5, lines: (w, h) => (<svg className="absolute inset-0 w-full h-full pointer-events-none"><rect x="5%" y="5%" width="90%" height="90%" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="2" strokeDasharray="10,10" /><line x1="50%" y1="5%" x2="50%" y2="95%" stroke="rgba(255,255,255,0.4)" strokeWidth="2" /><circle cx="50%" cy="50%" r="10%" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="2" /><line x1="5%" y1="50%" x2="95%" y2="50%" stroke="rgba(255,255,255,0.1)" strokeWidth="1" /></svg>) }
+        };
+
+        const FIXED_CHALLENGES = [
+            // 농구 (3개)
+            { id: 1, title: "농구: 빈 곳으로 가기", courtType: 'basketball', description: "공격수 1명을 수비수가 없는 구석으로 이동시켜 패스를 받을 준비를 하세요.", tip: "수비수와 멀리 떨어질수록 공을 받기 쉬워요!", initialPlayers: [{ id: 1, x: 25, y: 50, team: 'A', role: '공격1' }, { id: 2, x: 25, y: 35, team: 'A', role: '공격2' }, { id: 3, x: 18, y: 45, team: 'B', role: '수비수' }, { id: 'ball', x: 25, y: 50, team: 'none', isBall: true }], targetZone: { x: 5, y: 85, w: 15, h: 10, type: 'rect' }, checkSuccess: (players) => players.some(p => p.team === 'A' && p.x < 20 && p.y > 75) },
+            { id: 2, title: "농구: 친구 몸으로 수비 가리기", courtType: 'basketball', description: "친구가 수비수를 막고 있는 동안, 다른 공격수가 골대 앞으로 빠르게 달려가세요.", tip: "친구의 등 뒤쪽 공간을 이용해서 달려보세요!", initialPlayers: [{ id: 1, x: 40, y: 50, team: 'A', role: '공격1' }, { id: 2, x: 25, y: 50, team: 'A', role: '공격2' }, { id: 3, x: 20, y: 50, team: 'B', role: '수비수' }, { id: 'ball', x: 40, y: 50, team: 'none', isBall: true }], targetZone: { x: 10, y: 50, r: 10, type: 'circle' }, checkSuccess: (players) => players.some(p => p.role === '공격1' && p.x < 15) },
+            { id: 3, title: "농구: 다 같이 공격!", courtType: 'basketball', description: "공을 뺏었어요! 우리 팀 모두가 상대편 코트(왼쪽)로 빠르게 넘어가세요.", tip: "수비수보다 먼저 달려가는 것이 중요해요.", initialPlayers: [{ id: 1, x: 60, y: 40, team: 'A', role: '공격1' }, { id: 2, x: 60, y: 60, team: 'A', role: '공격2' }, { id: 3, x: 50, y: 50, team: 'B', role: '수비수' }, { id: 'ball', x: 60, y: 40, team: 'none', isBall: true }], targetZone: { x: 25, y: 50, w: 40, h: 80, type: 'rect' }, checkSuccess: (players) => players.filter(p => p.team === 'A').every(p => p.x < 45) },
+            
+            // 풋살 (3개)
+            { id: 4, title: "풋살: 친구들과 나눠 서기", courtType: 'futsal', description: "선수 4명이 서로 겹치지 않게 넓게 퍼져서 다이아몬드 모양을 만들어 보세요.", tip: "앞, 뒤, 양옆에 골고루 서야 해요.", initialPlayers: [{ id: 1, x: 48, y: 48, team: 'A', role: '공격1' }, { id: 2, x: 50, y: 50, team: 'A', role: '공격2' }, { id: 3, x: 52, y: 52, team: 'A', role: '공격3' }, { id: 4, x: 54, y: 54, team: 'A', role: '공격4' }, { id: 'ball', x: 20, y: 50, team: 'none', isBall: true }], targetZone: { x: 50, y: 50, r: 25, type: 'circle' }, checkSuccess: (players) => { const teamA = players.filter(p => p.team === 'A'); return teamA.length >= 4 && teamA.some(p => p.x < 40) && teamA.some(p => p.x > 60) && teamA.some(p => p.y < 35) && teamA.some(p => p.y > 65); } },
+            { id: 5, title: "풋살: 옆으로 뛰어서 공 받기", courtType: 'futsal', description: "수비수가 앞을 막고 있어요. 친구가 패스할 수 있게 옆으로 움직이세요.", tip: "수비수가 없는 빈 옆 공간으로 이동하세요.", initialPlayers: [{ id: 1, x: 30, y: 50, team: 'A', role: '공격1' }, { id: 2, x: 50, y: 50, team: 'A', role: '공격2' }, { id: 3, x: 40, y: 50, team: 'B', role: '수비수' }, { id: 'ball', x: 50, y: 50, team: 'none', isBall: true }], targetZone: { x: 30, y: 20, w: 20, h: 20, type: 'rect' }, checkSuccess: (players) => players.some(p => p.role === '공격1' && p.y < 35) },
+            { id: 6, title: "풋살: 골대 앞 튼튼한 수비", courtType: 'futsal', description: "상대방이 공격해와요! 수비수 2명이 우리 골대(왼쪽) 앞을 꽉 막으세요.", tip: "골대와 상대방 사이에 서야 골을 막을 수 있어요.", initialPlayers: [{ id: 1, x: 30, y: 30, team: 'A', role: '수비1' }, { id: 2, x: 30, y: 70, team: 'A', role: '수비2' }, { id: 3, x: 50, y: 50, team: 'B', role: '공격수' }, { id: 'ball', x: 50, y: 50, team: 'none', isBall: true }], targetZone: { x: 10, y: 50, w: 10, h: 40, type: 'rect' }, checkSuccess: (players) => players.filter(p => p.team === 'A' && p.x < 15).length >= 2 },
+
+            // 배구 (3개)
+            { id: 7, title: "배구: 부채꼴 수비 대형", courtType: 'volleyball', description: "공이 어디로 올지 몰라요. 수비수 3명이 부채꼴 모양으로 넓게 서세요.", tip: "코트 뒤쪽 구석구석을 나눠서 맡아보세요.", initialPlayers: [{ id: 1, x: 70, y: 50, team: 'A', role: '수비1' }, { id: 2, x: 70, y: 45, team: 'A', role: '수비2' }, { id: 3, x: 70, y: 55, team: 'A', role: '수비3' }, { id: 'ball', x: 20, y: 50, team: 'none', isBall: true }], targetZone: { x: 80, y: 50, w: 20, h: 80, type: 'rect' }, checkSuccess: (players) => { const teamA = players.filter(p => p.team === 'A' && p.x > 75); const spread = Math.max(...teamA.map(p => p.y)) - Math.min(...teamA.map(p => p.y)); return teamA.length >= 3 && spread > 40; } },
+            { id: 8, title: "배구: 공 올리는 사람(세터) 이동", courtType: 'volleyball', description: "공이 넘어오기 직전이에요! 세터는 네트 근처 중앙으로 미리 가세요.", tip: "세터는 공격수가 때리기 좋게 공을 올려주는 역할이에요.", initialPlayers: [{ id: 1, x: 85, y: 80, team: 'A', role: '세터' }, { id: 2, x: 70, y: 40, team: 'A', role: '공격' }, { id: 'ball', x: 20, y: 50, team: 'none', isBall: true }], targetZone: { x: 55, y: 50, r: 10, type: 'circle' }, checkSuccess: (players) => players.some(p => p.role === '세터' && p.x < 65 && p.x > 50 && p.y > 40 && p.y < 60) },
+            { id: 9, title: "배구: 두 명이서 가운데 지키기", courtType: 'volleyball', description: "상대방의 서브를 받기 위해 두 명이 코트 가운데에 나란히 서보세요.", tip: "서로 부딪히지 않게 적당히 떨어져 서는 게 좋아요.", initialPlayers: [{ id: 1, x: 85, y: 30, team: 'A', role: '공격1' }, { id: 2, x: 85, y: 70, team: 'A', role: '공격2' }, { id: 'ball', x: 10, y: 50, team: 'none', isBall: true }], targetZone: { x: 75, y: 50, w: 10, h: 60, type: 'rect' }, checkSuccess: (players) => players.filter(p => p.team === 'A' && p.x < 80 && p.x > 70).length >= 2 }
+        ];
+
         const App = () => {
             const [courtType, setCourtType] = useState('basketball');
-            const [players, setPlayers] = useState([
-                { id: 1, x: 20, y: 30, team: 'A', role: '공격' },
-                { id: 2, x: 20, y: 70, team: 'A', role: '공격' },
-                { id: 3, x: 80, y: 50, team: 'B', role: '수비' },
-                { id: 'ball', x: 50, y: 50, team: 'none', isBall: true }
-            ]);
+            const [players, setPlayers] = useState([{ id: 1, x: 20, y: 30, team: 'A', role: '공격' }, { id: 2, x: 20, y: 70, team: 'A', role: '공격' }, { id: 3, x: 80, y: 50, team: 'B', role: '수비' }, { id: 'ball', x: 50, y: 50, team: 'none', isBall: true }]);
             const [drawing, setDrawing] = useState([]);
             const [isDrawingMode, setIsDrawingMode] = useState(false);
             const [isDeleteMode, setIsDeleteMode] = useState(false);
             const [activeTab, setActiveTab] = useState('board');
-            const [currentChallengeIdx, setCurrentChallengeIdx] = useState(0);
+            const [currentChallenge, setCurrentChallenge] = useState(null);
             const [challengeResult, setChallengeResult] = useState(null);
             const [showHint, setShowHint] = useState(false);
+            
+            const [userApiKey, setUserApiKey] = useState("");
+            const [isAiLoading, setIsAiLoading] = useState(false);
+            const [aiGeneratedChallenges, setAiGeneratedChallenges] = useState([]);
 
             const containerRef = useRef(null);
             const isDrawingActive = useRef(false);
 
             const getCoords = (e) => {
-                if (!containerRef.current) return { x: 0, y: 0 };
                 const rect = containerRef.current.getBoundingClientRect();
-                const x = ((e.clientX - rect.left) / rect.width) * 100;
-                const y = ((e.clientY - rect.top) / rect.height) * 100;
-                return { x, y };
+                return { x: ((e.clientX - rect.left) / rect.width) * 100, y: ((e.clientY - rect.top) / rect.height) * 100 };
             };
 
-            const startChallenge = (idx) => {
-                const ch = STRATEGY_CHALLENGES[idx];
+            const startChallenge = (ch) => {
                 setCourtType(ch.courtType);
                 setPlayers(JSON.parse(JSON.stringify(ch.initialPlayers)));
                 setDrawing([]); setChallengeResult(null); setShowHint(false);
-                setCurrentChallengeIdx(idx); setActiveTab('challenge_play');
+                setCurrentChallenge(ch); setActiveTab('challenge_play');
             };
 
-            const checkChallenge = () => {
-                const isSuccess = STRATEGY_CHALLENGES[currentChallengeIdx].checkSuccess(players);
-                setChallengeResult(isSuccess ? 'success' : 'fail');
+            const resetBoard = () => {
+                setDrawing([]);
+                setPlayers([{ id: 1, x: 20, y: 30, team: 'A', role: '공격' }, { id: 2, x: 20, y: 70, team: 'A', role: '공격' }, { id: 3, x: 80, y: 50, team: 'B', role: '수비' }, { id: 'ball', x: 50, y: 50, team: 'none', isBall: true }]);
+                setChallengeResult(null);
             };
-
-            const addPlayer = (team) => {
-                const newId = Date.now();
-                setPlayers(prev => [...prev, { id: newId, x: 50, y: team === 'A' ? 20 : 80, team, role: team === 'A' ? '공격' : '수비' }]);
-            };
-
-            const removePlayer = (id) => { if (id !== 'ball') setPlayers(prev => prev.filter(p => p.id !== id)); };
-
-            const handleStartDrawing = (e) => {
-                if (!isDrawingMode) return;
-                e.target.setPointerCapture(e.pointerId);
-                isDrawingActive.current = true;
-                setDrawing(prev => [...prev, [getCoords(e)]]);
-            };
-
-            const handleMoveDrawing = (e) => {
-                if (!isDrawingActive.current) return;
-                const point = getCoords(e);
-                setDrawing(prev => {
-                    const last = prev[prev.length - 1];
-                    return [...prev.slice(0, -1), [...last, point]];
-                });
-            };
-
-            const handleEndDrawing = (e) => { if (isDrawingActive.current) { e.target.releasePointerCapture(e.pointerId); isDrawingActive.current = false; } };
 
             const handlePlayerDragStart = (e, id) => {
                 if (isDrawingMode) return;
-                if (isDeleteMode) { removePlayer(id); return; }
-                e.stopPropagation();
+                if (isDeleteMode) { setPlayers(prev => prev.filter(p => p.id !== id)); return; }
                 const onPointerMove = (me) => {
                     const c = getCoords(me);
                     if (c.x >= 0 && c.x <= 100 && c.y >= 0 && c.y <= 100) {
@@ -307,10 +159,57 @@
                 window.addEventListener('pointerup', onPointerUp);
             };
 
-            const resetBoard = () => {
-                setDrawing([]);
-                setPlayers([{ id: 1, x: 20, y: 30, team: 'A', role: '공격' }, { id: 2, x: 20, y: 70, team: 'A', role: '공격' }, { id: 3, x: 80, y: 50, team: 'B', role: '수비' }, { id: 'ball', x: 50, y: 50, team: 'none', isBall: true }]);
-                setChallengeResult(null);
+            const handleStartDrawing = (e) => {
+                if (!isDrawingMode) return;
+                e.target.setPointerCapture(e.pointerId);
+                isDrawingActive.current = true;
+                setDrawing(prev => [...prev, [getCoords(e)]]);
+            };
+
+            const generateAiChallenge = async () => {
+                if (!userApiKey) {
+                    alert("AI 기능을 사용하려면 하단에 Gemini API 키를 먼저 입력해주세요.");
+                    return;
+                }
+                setIsAiLoading(true);
+                const currentSportName = COURT_TYPES[courtType].name;
+                const prompt = `
+                    체육 수업을 듣는 초등학교 5, 6학년 학생 수준에 맞춰 아주 쉽고 재미있는 ${currentSportName} 전략 문제를 생성해주세요.
+                    어려운 전술 용어는 사용하지 말고, '친구 몸으로 수비 가리기', '멀리 도망가기'처럼 쉬운 말로 설명하세요.
+                    반드시 아래 JSON 형식을 엄격히 지켜 답변하세요. JSON 외의 텍스트는 포함하지 마세요.
+
+                    {
+                        "title": "초등학생이 좋아할 만한 재미있는 제목",
+                        "description": "상황 설명 1~2문장",
+                        "tip": "성공할 수 있는 아주 쉬운 방법 힌트",
+                        "targetZone": { "x": 50, "y": 50, "w": 20, "h": 20, "type": "rect" },
+                        "initialPlayers": [
+                            { "id": 1, "x": 30, "y": 40, "team": "A", "role": "공격1" },
+                            { "id": 2, "x": 45, "y": 55, "team": "A", "role": "공격2" },
+                            { "id": 3, "x": 20, "y": 50, "team": "B", "role": "수비" },
+                            { "id": "ball", "x": 30, "y": 40, "team": "none", "isBall": true }
+                        ]
+                    }
+                `;
+                try {
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${userApiKey}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: [{ parts: [{ text: prompt }] }],
+                            generationConfig: { responseMimeType: "application/json" }
+                        })
+                    });
+                    if (!response.ok) throw new Error("API 요청 실패");
+                    const data = await response.json();
+                    const challengeData = JSON.parse(data.candidates[0].content.parts[0].text);
+                    const newCh = { ...challengeData, id: 'ai-' + Date.now(), courtType: courtType, checkSuccess: (players) => {
+                        const z = challengeData.targetZone;
+                        return players.some(p => p.team === 'A' && Math.abs(p.x - z.x) < z.w/2 && Math.abs(p.y - z.y) < z.h/2);
+                    }};
+                    setAiGeneratedChallenges(prev => [newCh, ...prev]);
+                    startChallenge(newCh);
+                } catch (err) { alert("도전 과제 생성 중 오류가 발생했습니다."); } finally { setIsAiLoading(false); }
             };
 
             return (
@@ -321,73 +220,88 @@
                             <h1 className="text-xl font-bold tracking-tight">코트전략마스터</h1>
                         </div>
                         <div className="flex gap-2">
-                            <button onClick={() => { setActiveTab('board'); setChallengeResult(null); }} className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${activeTab === 'board' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600'}`}>자유 전술판</button>
-                            <button onClick={() => { setActiveTab('challenge'); setChallengeResult(null); }} className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${activeTab === 'challenge' || activeTab === 'challenge_play' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600'}`}>전략 챌린지</button>
+                            <button onClick={() => { setActiveTab('board'); setCurrentChallenge(null); }} className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${activeTab === 'board' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600'}`}>자유 전술판</button>
+                            <button onClick={() => { setActiveTab('challenge'); setChallengeResult(null); }} className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${activeTab.includes('challenge') ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600'}`}>전략 챌린지</button>
                         </div>
                     </header>
 
                     <main className="flex-1 flex overflow-hidden">
-                        <aside className="w-80 bg-white border-r p-6 flex flex-col gap-6 overflow-y-auto z-40 shadow-md">
+                        <aside className="w-80 bg-white border-r p-6 flex flex-col gap-6 overflow-y-auto z-40 shadow-md scroll-custom">
                             {activeTab === 'board' ? (
                                 <>
                                     <div>
-                                        <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 block">종목 선택</label>
-                                        <div className="grid grid-cols-1 gap-2">
+                                        <label className="text-xs font-bold text-slate-400 uppercase mb-3 block">종목 선택</label>
+                                        <div className="grid grid-cols-2 gap-2">
                                             {Object.entries(COURT_TYPES).map(([key, value]) => (
-                                                <button key={key} onClick={() => { setCourtType(key); resetBoard(); }} className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all ${courtType === key ? 'border-indigo-600 bg-indigo-50' : 'border-slate-100 hover:border-slate-200'}`}>
-                                                    <Icon name="Map" size={18} className={courtType === key ? 'text-indigo-600' : 'text-slate-400'} />
-                                                    <span className={`text-sm font-semibold ${courtType === key ? 'text-indigo-700' : 'text-slate-600'}`}>{value.name}</span>
+                                                <button key={key} onClick={() => { setCourtType(key); resetBoard(); }} className={`flex items-center gap-2 p-3 rounded-xl border-2 transition-all ${courtType === key ? 'border-indigo-600 bg-indigo-50' : 'border-slate-100 hover:border-slate-200'}`}>
+                                                    <Icon name={key === 'free' ? 'Layers' : 'Map'} size={18} className={courtType === key ? 'text-indigo-600' : 'text-slate-400'} />
+                                                    <span className="text-xs font-semibold">{value.name}</span>
                                                 </button>
                                             ))}
                                         </div>
                                     </div>
                                     <div className="pt-4 border-t">
-                                        <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 block">선수 관리</label>
+                                        <label className="text-xs font-bold text-slate-400 uppercase mb-3 block text-center">도구 및 선수</label>
                                         <div className="grid grid-cols-2 gap-2 mb-3">
-                                            <button onClick={() => addPlayer('A')} className="flex flex-col items-center gap-1 p-3 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200"><Icon name="UserPlus" size={20} /><span className="text-[10px] font-bold">공격수 추가</span></button>
-                                            <button onClick={() => addPlayer('B')} className="flex flex-col items-center gap-1 p-3 rounded-xl bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border border-indigo-200"><Icon name="UserPlus" size={20} /><span className="text-[10px] font-bold">수비수 추가</span></button>
+                                            <button onClick={() => setPlayers(p => [...p, { id: Date.now(), x: 20, y: 20, team: 'A', role: '공격' }])} className="p-3 rounded-xl bg-rose-50 text-rose-600 border border-rose-200 text-xs font-bold flex flex-col items-center gap-1"><Icon name="UserPlus" size={20} />공격 추가</button>
+                                            <button onClick={() => setPlayers(p => [...p, { id: Date.now(), x: 80, y: 80, team: 'B', role: '수비' }])} className="p-3 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-200 text-xs font-bold flex flex-col items-center gap-1"><Icon name="UserPlus" size={20} />수비 추가</button>
                                         </div>
-                                        <button onClick={() => { setIsDeleteMode(!isDeleteMode); setIsDrawingMode(false); }} className={`flex items-center justify-between w-full p-3 rounded-xl border-2 transition-all ${isDeleteMode ? 'bg-red-50 border-red-500 text-red-700' : 'bg-white border-slate-100'}`}><div className="flex items-center gap-2"><Icon name="UserMinus" size={18} /><span className="text-sm font-semibold">선수 삭제 모드</span></div><div className={`w-10 h-5 rounded-full relative ${isDeleteMode ? 'bg-red-500' : 'bg-slate-200'}`}><div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${isDeleteMode ? 'right-1' : 'left-1'}`} /></div></button>
-                                    </div>
-                                    <div className="pt-4 border-t">
-                                        <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 block">도구</label>
                                         <div className="flex flex-col gap-2">
                                             <button onClick={() => { setIsDrawingMode(!isDrawingMode); setIsDeleteMode(false); }} className={`flex items-center justify-between p-3 rounded-xl border-2 transition-all ${isDrawingMode ? 'bg-amber-50 border-amber-500 text-amber-700' : 'bg-white border-slate-100'}`}><div className="flex items-center gap-2"><Icon name="Pencil" size={18} /><span className="text-sm font-semibold">그리기 모드</span></div><div className={`w-10 h-5 rounded-full relative ${isDrawingMode ? 'bg-amber-500' : 'bg-slate-200'}`}><div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${isDrawingMode ? 'right-1' : 'left-1'}`} /></div></button>
-                                            <button onClick={() => setDrawing([])} className="flex items-center gap-2 p-3 rounded-xl bg-slate-50 text-slate-600 border border-slate-200"><Icon name="Trash2" size={18} /><span className="text-sm font-semibold">선 지우기</span></button>
-                                            <button onClick={resetBoard} className="flex items-center gap-2 p-3 rounded-xl bg-slate-50 text-slate-600 border border-slate-200"><Icon name="RotateCcw" size={18} /><span className="text-sm font-semibold">초기화</span></button>
+                                            <button onClick={() => { setIsDeleteMode(!isDeleteMode); setIsDrawingMode(false); }} className={`flex items-center justify-between p-3 rounded-xl border-2 transition-all ${isDeleteMode ? 'bg-red-50 border-red-500 text-red-700' : 'bg-white border-slate-100'}`}><div className="flex items-center gap-2"><Icon name="UserMinus" size={18} /><span className="text-sm font-semibold">선수 삭제 모드</span></div><div className={`w-10 h-5 rounded-full relative ${isDeleteMode ? 'bg-red-500' : 'bg-slate-200'}`}><div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${isDeleteMode ? 'right-1' : 'left-1'}`} /></div></button>
+                                            <button onClick={() => setDrawing([])} className="p-3 bg-slate-100 rounded-xl text-xs font-bold flex items-center justify-center gap-2 text-slate-600 hover:bg-slate-200 transition-all"><Icon name="RotateCcw" size={16} />선 모두 지우기</button>
+                                            <button onClick={resetBoard} className="p-3 bg-slate-800 rounded-xl text-xs font-bold flex items-center justify-center gap-2 text-white hover:bg-black transition-all">코트 초기화</button>
                                         </div>
                                     </div>
                                 </>
                             ) : activeTab === 'challenge' ? (
-                                <div className="flex flex-col gap-4">
-                                    <div className="flex items-center gap-2 mb-2"><Icon name="Lightbulb" className="text-amber-500" /><h2 className="text-lg font-bold">전략 챌린지 선택</h2></div>
-                                    <div className="space-y-2">{STRATEGY_CHALLENGES.map((ch, idx) => (<button key={ch.id} onClick={() => startChallenge(idx)} className="flex items-center justify-between w-full p-4 rounded-2xl bg-slate-50 border-2 border-slate-100 hover:border-indigo-400 hover:bg-white transition-all text-left"><div className="flex flex-col gap-1"><span className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest">{ch.courtType}</span><span className="font-bold text-slate-800 text-sm">{ch.title}</span></div><Icon name="Play" size={16} className="text-slate-400" /></button>))}</div>
+                                <div className="flex flex-col gap-4 pb-20">
+                                    <div className="flex flex-col gap-3 sticky top-0 bg-white z-10 py-2">
+                                        <h2 className="text-lg font-bold flex items-center gap-2"><Icon name="Lightbulb" className="text-amber-500" /> 전략 챌린지</h2>
+                                        <button onClick={generateAiChallenge} disabled={isAiLoading} className="w-full py-4 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-2xl font-bold shadow-lg flex items-center justify-center gap-2">{isAiLoading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Icon name="Sparkles" size={20} />}{isAiLoading ? "AI 선생님이 문제 만드는 중..." : "AI 전략 문제 만들기"}</button>
+                                    </div>
+                                    <div className="space-y-6 pt-2">
+                                        {aiGeneratedChallenges.length > 0 && (
+                                            <div>
+                                                <label className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest mb-2 block">AI가 만든 문제</label>
+                                                <div className="space-y-2">{aiGeneratedChallenges.map((ch) => (<button key={ch.id} onClick={() => startChallenge(ch)} className="flex items-center justify-between w-full p-4 rounded-2xl bg-indigo-50 border-2 border-indigo-100 hover:border-indigo-400 text-left transition-all"><div className="flex flex-col gap-1"><span className="text-[10px] font-bold text-indigo-400 uppercase">{COURT_TYPES[ch.courtType].name}</span><span className="font-bold text-indigo-900 text-sm">{ch.title}</span></div><Icon name="Play" size={16} className="text-indigo-400" /></button>))}</div>
+                                            </div>
+                                        )}
+                                        <div>
+                                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">기본 교육 문제 (9개)</label>
+                                            <div className="space-y-2">{FIXED_CHALLENGES.map((ch) => (<button key={ch.id} onClick={() => startChallenge(ch)} className="flex items-center justify-between w-full p-4 rounded-2xl bg-slate-50 border-2 border-slate-100 hover:border-indigo-400 text-left transition-all"><div className="flex flex-col gap-1"><span className="text-[10px] font-bold text-slate-400 uppercase">{COURT_TYPES[ch.courtType].name}</span><span className="font-bold text-slate-800 text-sm">{ch.title}</span></div><Icon name="Play" size={16} className="text-slate-400" /></button>))}</div>
+                                        </div>
+                                    </div>
                                 </div>
                             ) : (
                                 <div className="flex flex-col h-full">
-                                    <button onClick={() => setActiveTab('challenge')} className="mb-4 text-xs text-indigo-600 flex items-center gap-1 font-bold uppercase tracking-wider"><Icon name="ChevronRight" size={14} className="rotate-180" /> 챌린지 목록으로</button>
-                                    <h2 className="text-xl font-bold text-slate-800 mb-2">{STRATEGY_CHALLENGES[currentChallengeIdx].title}</h2>
-                                    <div className="bg-indigo-50 p-4 rounded-2xl border border-indigo-100 mb-6"><p className="text-sm text-indigo-900 leading-relaxed font-medium">{STRATEGY_CHALLENGES[currentChallengeIdx].description}</p></div>
-                                    <button onClick={() => setShowHint(!showHint)} className="w-full py-3 px-4 rounded-xl border border-amber-200 bg-amber-50 text-amber-700 text-xs font-bold flex items-center justify-center gap-2"><Icon name="Lightbulb" size={16} /> {showHint ? '힌트 닫기' : '힌트 보기'}</button>
-                                    {showHint && <p className="mt-2 text-xs text-amber-800 bg-amber-100/50 p-3 rounded-lg italic">{STRATEGY_CHALLENGES[currentChallengeIdx].tip}</p>}
-                                    <div className="mt-auto space-y-3">
-                                        {challengeResult === 'success' && (<div className="p-4 bg-emerald-50 text-emerald-700 rounded-2xl border border-emerald-200 flex items-center gap-3 animate-bounce-success"><Icon name="CheckCircle" size={24} /><div className="flex flex-col"><span className="font-bold text-sm">성공입니다!</span><span className="text-[10px]">전술적 목표를 달성했습니다.</span></div></div>)}
-                                        {challengeResult === 'fail' && (<div className="p-4 bg-rose-50 text-rose-700 rounded-2xl border border-rose-200 flex items-center gap-3"><Icon name="XCircle" size={24} /><div className="flex flex-col"><span className="font-bold text-sm">다시 확인해보세요</span><span className="text-[10px]">선수들의 위치를 조금 더 조정해보세요.</span></div></div>)}
-                                        <button onClick={checkChallenge} className="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black text-lg shadow-xl shadow-indigo-200 hover:bg-indigo-700 active:scale-95 transition-all">배치 완료</button>
+                                    <button onClick={() => setActiveTab('challenge')} className="mb-4 text-xs text-indigo-600 flex items-center gap-1 font-bold"><Icon name="ChevronRight" size={14} className="rotate-180" /> 목록으로</button>
+                                    <h2 className="text-xl font-bold mb-2 leading-tight">{currentChallenge.title}</h2>
+                                    <p className="text-sm text-slate-600 mb-6 bg-indigo-50 p-4 rounded-xl leading-relaxed">{currentChallenge.description}</p>
+                                    <div className="flex flex-col gap-2 mb-6">
+                                        <button onClick={() => setShowHint(!showHint)} className="w-full py-3 rounded-xl border border-amber-200 bg-amber-50 text-amber-700 text-xs font-bold flex items-center justify-center gap-2">{showHint ? '힌트 숨기기' : 'AI 힌트 보기'}</button>
+                                        {showHint && <p className="p-4 bg-amber-100/50 rounded-lg text-xs italic leading-normal text-amber-900">{currentChallenge.tip}</p>}
                                     </div>
+                                    <button onClick={() => setChallengeResult(currentChallenge.checkSuccess(players) ? 'success' : 'fail')} className="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black text-lg shadow-lg">배치 완료</button>
+                                    {challengeResult === 'success' && <div className="mt-4 p-4 bg-emerald-50 text-emerald-700 rounded-xl animate-bounce-success flex items-center gap-2 font-bold"><Icon name="CheckCircle" /> 잘했어요! 정답입니다.</div>}
+                                    {challengeResult === 'fail' && <div className="mt-4 p-4 bg-rose-50 text-rose-700 rounded-xl flex items-center gap-2 font-bold"><Icon name="XCircle" /> 조금만 더 생각해서 다시 옮겨볼까요?</div>}
                                 </div>
                             )}
+                            <div className="mt-auto pt-6 border-t border-slate-100">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1 mb-2"><Icon name="Key" size={12} /> 선생님 전용 설정</label>
+                                <input type="password" placeholder="API 키를 입력하세요" value={userApiKey} onChange={(e) => setUserApiKey(e.target.value)} className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-400" />
+                            </div>
                         </aside>
 
                         <section className="flex-1 bg-slate-100 p-8 flex items-center justify-center relative">
-                            <div ref={containerRef} className={`relative shadow-2xl rounded-sm border-4 border-slate-800 bg-white overflow-hidden touch-none ${isDeleteMode ? 'ring-4 ring-red-400' : ''}`} style={{ width: 'min(90%, 800px)', aspectRatio: COURT_TYPES[courtType].ratio, backgroundColor: COURT_TYPES[courtType].color }}>
+                            <div ref={containerRef} className="relative shadow-2xl rounded-sm border-4 border-slate-800 bg-white overflow-hidden touch-none" style={{ width: 'min(90%, 800px)', aspectRatio: COURT_TYPES[courtType].ratio, backgroundColor: COURT_TYPES[courtType].color }}>
                                 {COURT_TYPES[courtType].lines(800, 800 / COURT_TYPES[courtType].ratio)}
-                                {activeTab === 'challenge_play' && (
+                                {activeTab === 'challenge_play' && currentChallenge && (
                                     <div className="absolute inset-0 pointer-events-none z-0">
                                         {(() => {
-                                            const z = STRATEGY_CHALLENGES[currentChallengeIdx].targetZone;
+                                            const z = currentChallenge.targetZone;
                                             const style = z.type === 'circle' ? { left: `${z.x - z.r}%`, top: `${z.y - z.r}%`, width: `${z.r * 2}%`, height: `${z.r * 2 / COURT_TYPES[courtType].ratio * 1.6}%`, borderRadius: '50%' } : { left: `${z.x - z.w / 2}%`, top: `${z.y - z.h / 2}%`, width: `${z.w}%`, height: `${z.h}%` };
-                                            return <div className="absolute border-4 border-white border-dashed bg-white/5 animate-pulse-slow" style={style} />;
+                                            return <div className="absolute border-4 border-white border-dashed bg-white/5 animate-pulse-slow flex items-center justify-center" style={style}><span className="text-white/20 text-[10px] font-bold uppercase tracking-tighter">도착 지점</span></div>;
                                         })()}
                                     </div>
                                 )}
@@ -395,20 +309,19 @@
                                     {drawing.map((path, idx) => (<path key={idx} d={`M ${path.map(p => `${p.x} ${p.y}`).join(' L ')}`} fill="none" stroke="white" strokeWidth="0.8" strokeLinecap="round" strokeLinejoin="round" opacity="0.9" />))}
                                 </svg>
                                 {players.map((p) => (
-                                    <div key={p.id} onPointerDown={(e) => handlePlayerDragStart(e, p.id)} className={`absolute w-12 h-12 -ml-6 -mt-6 rounded-full flex items-center justify-center shadow-xl transform transition-all active:scale-110 select-none ${p.isBall ? 'z-30 p-1' : p.team === 'A' ? 'bg-rose-500 border-2 border-white text-white z-20' : 'bg-indigo-500 border-2 border-white text-white z-20'} ${isDrawingMode ? 'opacity-50 cursor-default' : 'cursor-move'} ${isDeleteMode && !p.isBall ? 'hover:bg-red-700' : ''}`} style={{ left: `${p.x}%`, top: `${p.y}%`, pointerEvents: isDrawingMode ? 'none' : 'auto' }}>
+                                    <div key={p.id} onPointerDown={(e) => handlePlayerDragStart(e, p.id)} className={`absolute w-12 h-12 -ml-6 -mt-6 rounded-full flex items-center justify-center shadow-xl transform transition-all active:scale-110 ${p.isBall ? 'z-30 p-1' : p.team === 'A' ? 'bg-rose-500 text-white z-20 border-2 border-white' : 'bg-indigo-500 text-white z-20 border-2 border-white'} cursor-move ${isDeleteMode && !p.isBall ? 'hover:bg-red-800' : ''}`} style={{ left: `${p.x}%`, top: `${p.y}%` }}>
                                         {p.isBall ? <div className="w-full h-full animate-bounce-subtle"><BallIcon type={courtType} /></div> : <div className="flex flex-col items-center"><Icon name="Users" size={16} /><span className="text-[10px] font-bold tracking-tighter">{p.role}</span></div>}
                                         {isDeleteMode && !p.isBall && <div className="absolute inset-0 bg-red-600/80 rounded-full flex items-center justify-center text-white"><Icon name="Trash2" size={20} /></div>}
                                     </div>
                                 ))}
-                                {isDrawingMode && <div className="absolute inset-0 z-40 cursor-crosshair touch-none" onPointerDown={handleStartDrawing} onPointerMove={handleMoveDrawing} onPointerUp={handleEndDrawing} onPointerCancel={handleEndDrawing} />}
+                                {isDrawingMode && <div className="absolute inset-0 z-40 cursor-crosshair touch-none" style={{ touchAction: 'none' }} onPointerDown={handleStartDrawing} onPointerMove={(e) => { if (isDrawingActive.current) { const point = getCoords(e); setDrawing(prev => { const last = prev[prev.length - 1]; return [...prev.slice(0, -1), [...last, point]]; }); } }} onPointerUp={(e) => { if (isDrawingActive.current) { e.target.releasePointerCapture(e.pointerId); isDrawingActive.current = false; } }} />}
                             </div>
                         </section>
                     </main>
 
                     <footer className="bg-white border-t px-6 py-3 text-center z-50">
                         <p className="text-[10px] text-slate-400 font-medium italic leading-relaxed">
-                            &copy; 2026 코트전략마스터 교육 도구. 전략은 공간을 지배하는 팀이 승리합니다.<br/>
-                            개발자: 김진우 선생님
+                            &copy; 2026 코트전략마스터 교육 도구 | <b>초등 5-6학년 체육 전술 수업용</b> | 개발자: 김진우 선생님
                         </p>
                     </footer>
                 </div>
